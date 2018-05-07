@@ -161,7 +161,8 @@ root@crypt06:~# icastats
 
 Your hands-on LAB environment is now properly setup!
 
-## Pervasive Encryption - Enabling OpenSSL and openSSH to use the Hardware
+## Pervasive Encryption - Enabling OpenSSL and OpenSSH to use the hardware acceleration support
+
 This chapter describes how to use the cryptographic functions of the LinuxONE server to encrypt data in flight. This technique means that the data is encrypted and decrypted before and after it is transmitted. We will use OpenSSL, SCP and SFTP to demonstrate the encryption of data in flight. 
 This chapter also shows how to customize the product to use the LinuxONE hardware encryption features. This chapter includes the following sections:
 - Preparing to use openSSL
@@ -170,7 +171,7 @@ This chapter also shows how to customize the product to use the LinuxONE hardwar
 - Testing Hardware Crypto functions with SCP
 
 ### 1. Preparing to use OpenSSL
-In the Linux system you use, OpenSSL is already instlaled, and the system is already enabled to use the cryptographic hardware of the LinuxONE. We also loaded the cryptographic device driver and the libica to use the crypto hardware. For the following, the following packages are required for encryption:
+In the Linux system you use, OpenSSL is already installed, and the system is already enabled to use the cryptographic hardware of the LinuxONE server. We also loaded the cryptographic device drivers and the libica to use the crypto hardware. For the following steps, the following packages are required for encryption:
 - openssl
 - openssl-libs
 - openssl-ibmca
@@ -185,7 +186,7 @@ root@crypt06:~# openssl engine -c
 (dynamic) Dynamic engine loading support
 ```
 ### 2. Configuring OpenSSL
-To use the ibmca engine and to benefit from the Cryptographic hardware support, the configuration file of OpenSSL needs to be modified. To customize the OpenSSL configuration to enable dynamic engine loading for ibmca, complete the following steps:
+To use the ibmca engine and to benefit from the Cryptographic hardware support, the configuration file of OpenSSL needs to be adjusted. To customize OpenSSL configuration to enable dynamic engine loading for ibmca, complete the following steps.
 #### 2.1. Locate the OpenSSL configuration file, which in our Ubuntu 16.04.3 LTS distribution is in this subdirectory: 
 ```
 root@crypt06:~# ls /usr/share/doc/openssl-ibmca/examples
@@ -197,7 +198,7 @@ Locate the main configuration file of openssl. Its name is openssl.cnf. Please i
 root@crypt06:~# ls -la /etc/ssl/openssl.cnf
 -rw-r--r-- 1 root root 10835 Dec  7 21:43 /etc/ssl/openssl.cnf
 ```
-Make a backup copy of the configuration file. We will modify it later, so just in case of, please issue the following command:
+Make a backup copy of the configuration file. We will modify it later, so just in case, please issue the following command:
 ```
 root@crypt06:~# cp -p /etc/ssl/openssl.cnf /etc/ssl/openssl.cnf.backup
 ```
@@ -352,7 +353,7 @@ The 'numbers' are in 1000s of bytes per second processed.
 type             16 bytes     64 bytes    256 bytes   1024 bytes   8192 bytes
 aes-128-cbc     188805.18k   681182.20k  1933875.38k  3380562.17k  5023402.43k
 ```
-The last line is quite interresting, because if you devide by 1000 the value 5023402.43k, you obtain the encryption bandwith of one IFL encryption as fast as possible data of 8192 bytes. In this case, the observe throuthput is 5 GB/s.
+The last line is quite interesting, it shows the encrypion bandwidth of one IFL - encrypting blocks of 8192 bytes of data over and over, as fast as possible. In this case, the observed throughput is roughly 5 GB/s (5023402.43/(1024\*1024)).
 
 Let's test now the decryption capabilities. Please issue the following command:
 ```
@@ -370,9 +371,9 @@ The 'numbers' are in 1000s of bytes per second processed.
 type             16 bytes     64 bytes    256 bytes   1024 bytes   8192 bytes
 aes-128-cbc     185640.10k   717697.76k  2460663.29k  5956947.57k 15075044.22k
 ```
-Same computation, as you can see the observe throuthput is 15 GB/s. That is normal because the mod of operation cbc associated with the encryption algorithm AES is faster in decryption that in encryption.
+Same computation, as you can see the observed throuthput is 15 GB/s. That is normal because the CBC mode of operation associated with the AES encryption algorithm is faster in decryption that in encryption.
 
-Let's check now how much we offload crypto on the hardware. Please issue the following command:
+Let's check now how much crypto we offload to the hardware. Please issue the following command:
 ```
 root@crypt06:~# icastats
  function     |          # hardware      |       # software
@@ -409,13 +410,13 @@ root@crypt06:~# icastats
      AES CMAC |         0              0 |         0             0
       AES XTS |         0              0 |         0             0
 ```
-**Note:** We can clearly see here the crypto offload in encryption operations. 96681976 operations was offloaded to the CPACF.
-**Note2:** We can clearly see here the crypto offload in decryption operations. 115370154 operations was offloaded to the CPACF.
+**Note:** We can clearly see here the crypto offload in encryption operations. 96681976 operations were offloaded to the CPACF.
+**Note2:** We can clearly see here the crypto offload in decryption operations. 115370154 operations were offloaded to the CPACF.
 
 #### 3.2. Testing Pervasive encryption with scp
-The scp command allows you to copy files over ssh connections. This is pretty useful if you want to transport files between computers, for example to backup something. The scp command uses the ssh command and they are very much alike. However, there are some important differences.
+The scp command allows you to copy files over ssh connections. This is pretty useful if you want to transport files between computers, for example to backup something. The scp command uses the ssh protocol and they are very much alike. However, there are some important differences.
 The scp command can be used in three* ways: to copy from a (remote) server to your computer, to copy from your computer to a (remote) server, and to copy from a (remote) server to another (remote) server. In the third case, the data is transferred directly between the servers; your own computer will only tell the servers what to do. These options are very useful for a lot of things that require files to be transferred
-Let's first clean the icastats monitoring.Please issue the following command:
+Let's first clean the icastats monitoring. Please issue the following command:
 ```
 root@crypt06:~# icastats -r
 ```
@@ -480,6 +481,7 @@ Now, let's see the hardware crypto offload with the SCP network protocol.
 
 Please issue the following command, yes confirm if prompted, and enter your session password if prompted (azerty11):
 ```
+root@crypt06:~# scp data.512M localhost:/dev/null
 The authenticity of host 'localhost (127.0.0.1)' can't be established.
 ECDSA key fingerprint is SHA256:IRiJuwD8Z8NF77bRUfNIfcIYEbocWMVT6RVcZh+FChs.
 Are you sure you want to continue connecting (yes/no)? yes
@@ -490,7 +492,7 @@ data.512M                                                         100%  512MB 17
 ```
 As you can see, the defaut cipher suite transfered 512MB in 3 seconds, so a bandwidth of 170MB/s. Not so bad.
 
-Issue the icastats command agai to validate the hardware crypto offload:
+Issue the icastats command again to validate the hardware crypto offload:
 ```
 root@crypt06:~# icastats
  function     |          # hardware      |       # software
@@ -527,17 +529,17 @@ root@crypt06:~# icastats
      AES CMAC |         0              0 |         0             0
       AES XTS |         0              0 |         0             0
 ```
-**Note:** Data integrity operation with sha1 and sha256 was correcly reported. AES is accelerated by default and is not reported because not passing by libica device driver.
+**Note:** Data integrity operation with sha1 and sha256 were correcly reported. AES is accelerated by default and is not reported because not passing through libica device driver.
 
 **Note2:** By default, scp doesn't use the best ciphers of IBM Z and LinuxONE. However, it is possible to specify it manually with -c option.
 
 Let's compare the defaut cipher performance with an optimized cipher. Please issue the following command:
 ```
-root@crypt06:~# scp -c aes256-ctr data.512M root@localhost:/dev/null
+root@crypt06:~# scp -c aes256-ctr data.512M localhost:/dev/null
 root@localhost's password: 
 data.512M                                                           100%  512MB 256.0MB/s   00:02
 ```
-As you can see, with 256MB/S, we increased 50% the throughput. So, beware default settings, and use hardware accelerated ciphers by IBM Z and LinuxONE.
+As you can see, with 256MB/s, we increased the throughput by 50%. So, beware default settings. Make sure to use hardware accelerated ciphers by IBM Z and LinuxONE.
 
 ## Pervasive Encryption - Enabling dm-crypt to use the Hardware
 The objective of this chapter, is to protect data at rest using dm-crypt in order to encrypt volume. dm-crypt is very interresting, because it helps to encrypt data without stopping running application.

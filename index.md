@@ -35,7 +35,9 @@ cache5          : level=4 type=Unified scope=Shared size=688128K line_size=256 a
 processor 0: version = FF,  identification = 233EF7,  machine = 3906
 processor 1: version = FF,  identification = 233EF7,  machine = 3906
 ```
+
 **Note**: msa on line 4, indicates that the CPACF instruction is properly supported and detected.
+
 **Note 2**: vx on line 4, indicates that SIMD and vector instructions are properly supported and detected.
 
 ### 2. Installing libica

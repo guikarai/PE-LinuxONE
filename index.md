@@ -450,7 +450,7 @@ root@crypt06:~# dd if=/dev/urandom of=data.512M bs=64M count=8 iflag=fullblock
 8+0 records out
 536870912 bytes (537 MB, 512 MiB) copied, 45.9584 s, 11.7 MB/s
 ```
-You just created a 512MB file made of random value. The file is named data.1G. You can confirm it issuing the following command:
+You just created a 512MB file made of random value. The file is named data.512MB. You can confirm it issuing the following command:
 ```
 root@crypt06:~# ls -hs
 total 512M

@@ -411,6 +411,8 @@ root@crypt06:~# icastats
 **Note2:** We can clearly see here the crypto offload in decryption operations. 115370154 operations was offloaded to the CPACF.
 
 #### 3.2. Testing Pervasive encryption with scp
+The scp command allows you to copy files over ssh connections. This is pretty useful if you want to transport files between computers, for example to backup something. The scp command uses the ssh command and they are very much alike. However, there are some important differences.
+The scp command can be used in three* ways: to copy from a (remote) server to your computer, to copy from your computer to a (remote) server, and to copy from a (remote) server to another (remote) server. In the third case, the data is transferred directly between the servers; your own computer will only tell the servers what to do. These options are very useful for a lot of things that require files to be transferred
 Let's first clean the icastats monitoring.Please issue the following command:
 ```
 root@crypt06:~# icastats -r

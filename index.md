@@ -39,8 +39,8 @@ cache5          : level=4 type=Unified scope=Shared size=688128K line_size=256 a
 processor 0: version = FF,  identification = 233EF7,  machine = 3906
 processor 1: version = FF,  identification = 233EF7,  machine = 3906
 ```
-#### Installing libica 3.0
-To make use of the libica hardware support for cryptographic functions, you must install the libica version 3.0 package. Obtain the current libica version from your distribution provider for automated installation. Please issue the following command:
+#### Installing libica
+To make use of the libica hardware support for cryptographic functions, you must install the libica. Obtain the current libica version from your distribution provider for automated installation. Please issue the following command:
 ```
 root@crypt06:~# sudo apt-get install libica-utils
 ```
@@ -83,19 +83,10 @@ operations are supported by libica on this system:
        AES XTS |    yes     |      no
 ```
 
-From the cpuinfo output, you can find the features that are enabled in the central processors.
-If the features list has msa listed, it means that CPACF is enabled.
-
-Most of the distributions include a generic kernel image for the specific platform. These
-device drivers for the generic kernel image are included as loadable kernel modules because
-statically compiling many drivers into one kernel causes the kernel image to be much larger.
-This kernel might be too large to boot on computers with limited memory.
+From the cpuinfo output, you can find the features that are enabled in the central processors. If the features list has msa listed, it means that CPACF is enabled. Most of the distributions include a generic kernel image for the specific platform. These device drivers for the generic kernel image are included as loadable kernel modules because statically compiling many drivers into one kernel causes the kernel image to be much larger. This kernel might be too large to boot on computers with limited memory.
 
 #### Starting crypto module
-Use the lsmod command to check whether the crypto device driver module is already loaded.
-If the module is not loaded, use the modprobe command to load the device driver module.
-If it shows that the Linux system is not yet loaded with the crypto device driver
-modules, so you must load it manually. The cryptographic device driver consists of multiple,
+Use the lsmod command to check whether the crypto device driver module is already loaded. If the module is not loaded, use the modprobe command to load the device driver module. If it shows that the Linux system is not yet loaded with the crypto device driver modules, so you must load it manually. The cryptographic device driver consists of multiple,
 separate modules.
 ```
 root@crypt06:~# modprobe aes_s390
@@ -163,7 +154,7 @@ root@crypt06:~# icastats
 Your hands-on LAB environment is now properly setup!
 
 ### Pervasive Encryption - Enabling OpenSSL and openSSH to use the Hardware
-This chapter describes how to use the cryptographic functions of the LinuxONE to encrypt data in flight. This technique means that the data is encrypted and decrypted before and after it is transmitted. We will use OpenSSL, SCP and SFTP to demonstrate the encryption of data in flight.
+This chapter describes how to use the cryptographic functions of the LinuxONE to encrypt data in flight. This technique means that the data is encrypted and decrypted before and after it is transmitted. We will use OpenSSL, SCP and SFTP to demonstrate the encryption of data in flight. 
 This chapter also shows how to customize the product to use the LinuxONE hardware encryption features. This chapter includes the following sections:
 - Preparing to use OpenSSL
 - Configuring OpenSSL

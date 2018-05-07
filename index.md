@@ -585,10 +585,10 @@ PBKDF2-whirlpool  179796 iterations per second
 #### Using dm-crypt Volumes as LVM Physical Volumes
 For the following, we will use LVM method to protect data at rest with dm-crypt at volume level. Objective will be to migrate data from unencrypted volume to dm-crypt volume. This is a 4 steps approach that doesn't required to reboot or to stop running application. 
 4 steps includes the following:
-- Step 1: Format a new encrypted volume with dm-crypt
-– Step 2: Add dm-crypt based physical volume to volume group
-– Step 3: Migrate data from non encrypted volume to encrypted volume
-– Step 4: Remove unencrypted volume from the volume group: vgreduce VG PV1
+* Step 1: Format a new encrypted volume with dm-crypt
+* Step 2: Add dm-crypt based physical volume to volume group
+* Step 3: Migrate data from non encrypted volume to encrypted volume
+* Step 4: Remove unencrypted volume from the volume group: vgreduce VG PV1
 
 Let's do this for real now.
 

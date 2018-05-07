@@ -750,7 +750,7 @@ If you see the following, you did it!
 To be sure that there is a prompt after after a reboot, please create /etc/crypttab with the following content:
 ```
 root@crypt06:~# vi /etc/crypttab
-ihscrypt /dev/vdc1 none
+dockercrypt /dev/disk/by-path/ccw-0.0.0201-part1 none
 ```
 
 You just finished the Pervasive encryption LAB. Thank you, and see you soon.

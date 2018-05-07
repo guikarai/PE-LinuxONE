@@ -14,7 +14,7 @@ The IBM Z and LinuxONE systems provide cryptographic functions that, from an app
 * Asynchronous cryptographic functions, provided by the Crypto Express features.
 
 The IBM Z and LinuxONE systems provide also rich cryptographic functions available via a complete crypto stack made of a set of key crypto APIs.
-![Image of the Crypto Stack](https://github.com/guikarai/PE-LinuxONE/blob/master/crypto-stack.png)
+![Image of the Crypto Stack](https://github.com/guikarai/PE-LinuxONE/blob/master/images/crypto-stack.png)
 
 **Note:** Locate openSSL and dm-crypt. For the following, we will work on how set-up a Linux environment in order to benefit of Pervasive Encryption benefits.
   
@@ -565,7 +565,7 @@ You can also confirm that the application is running using a web-browser and che
 ```
 http://<your_lab_machine_ip>:8080/
 ```
-![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/tomcat-running.png)
+![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/images/tomcat-running.png)
 
 ### 1. Installing cryptsetup
 The cryptsetup feature provides an interface for configuring encryption on block devices (such as /home or swap partitions), using the Linux kernel device mapper target dm-crypt. It features integrated LUKS (Linux Unified Key Setup) support. LUKS standardizes the format of the encrypted disk, which allows different implementations, even from other operating systems, to access and decrypt the disk. 
@@ -636,7 +636,7 @@ root@crypt06:~# lvs
 
 ### 3.1 Step 1 - Formatting and encrypting a new volume
 In the following step, we will format and encrypt an existing volume.
-![Step1](https://github.com/guikarai/PE-LinuxONE/blob/master/step1.png)
+![Step1](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step1.png)
 
 ```
 root@crypt06:~# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/dasdc1
@@ -657,7 +657,7 @@ Enter passphrase for /dev/dasdc1: 
 
 ### 3.2 Step 2 - Add dm-crypt based physical volume to volume group
 In this second step, we will add the encrypted volume into the existing volume group. Both an encrypted volume and unencrypted volume will be part of the same volume groupe.
-![Step2](https://github.com/guikarai/PE-LinuxONE/blob/master/step2.png)
+![Step2](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step2.png)
 
 ```
 root@crypt06:~# pvcreate /dev/mapper/dockercrypt 
@@ -683,7 +683,7 @@ root@crypt06:~# pvs
 
 ### 3.3 Step 3 - Migrate data from non encrypted volume to encrypted volume
 In this third step, we will migrate unencrypted data in the uncrypted physical volume to the encrypted physical volume. This operation thanks to the **pvmove** switch update from the source PV to the destination PV once completed. This command doesn't halt running application. This operation can take some time. 
-![Step3](https://github.com/guikarai/PE-LinuxONE/blob/master/step3.png)
+![Step3](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step3.png)
 
 Please issue to following command to proceede:
 ```
@@ -720,7 +720,7 @@ root@crypt06:~# pvmove /dev/dasdd1 /dev/mapper/dockercrypt
 
 ### 3.4 Step 4 - Remove unencrypted volume from the volume group
 Fourth and last step. It is time to remove from the volume group, the volume that is unencrypted, we don't need it anymore.
-![Step4](https://github.com/guikarai/PE-LinuxONE/blob/master/step4.png)
+![Step4](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step4.png)
 
 Do do so, we will use the **vgreduce**. Please issue the following command:
 ```
@@ -745,7 +745,7 @@ You can also confirm that the application is running using a web-browser and che
 http://<your_lab_machine_ip>:8080/
 ```
 If you see the following, you did it!
-![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/tomcat-running.png)
+![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/images/tomcat-running.png)
 
 To be sure that there is a prompt after after a reboot, please create /etc/crypttab with the following content:
 ```

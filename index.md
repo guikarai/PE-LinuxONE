@@ -20,7 +20,7 @@ The IBM Z and LinuxONE systems provide also rich cryptographic functions availab
   
 ## Enabling Linux to use the Hardware
 ### 1. CPACF Enablement verification
-A Linux on IBM Z user can easily check whether the Crypto Enablement feature is installed and which algorithms are supported in hardware. Hardware-acceleration for DES, TDES, AES, and GHASH requires CPACF. Issue the command shown belowto discover whether the CPACF feature is enabled
+A Linux on IBM Z user can easily check whether the Crypto Enablement feature is installed and which algorithms are supported in hardware. Hardware-acceleration for DES, TDES, AES, and GHASH requires CPACF. Issue the command shown below to discover whether the CPACF feature is enabled
 on your hardware.
 ```
 root@crypt06:~# cat /proc/cpuinfo 
@@ -43,12 +43,13 @@ processor 1: version = FF,  identification = 233EF7,  machine = 3906
 **Note 2**: vx on line 4, indicates that SIMD and vector instructions are properly supported and detected.
 
 ### 2. Installing libica
-To make use of the libica hardware support for cryptographic functions, you must install the libica. Obtain the current libica version from your distribution provider for automated installation. Please issue the following command:
+To make use of the libica hardware support for cryptographic functions, you must install the libica package. Obtain the current libica version from your distribution provider for automated installation by issuing the following command:
 ```
 root@crypt06:~# sudo apt-get install libica-utils
 ```
 After the libica utility is installed, use the **icainfo** command to check on the CPACF feature code enablement. 
-The icainfo command displays which CPACF functions are supported by the implementation inside the libica library. Issue the following command to show that the device driver loaded how which cryptographic algorithms will be accelerated and hardware or software way.
+The icainfo command displays which CPACF functions are supported by the implementation inside the libica library. Issue the following command to show which cryptographic algorithms will be hardware-accelerated by the libica driver, and which one will remain software-only implementations.
+
 ```
 root@crypt06:~# icainfo
 The following CP Assist for Cryptographic Function (CPACF) 
@@ -90,8 +91,8 @@ From the **cpuinfo** output, you can find the features that are enabled in the c
 If the features list has msa listed, it means that CPACF is enabled. Most of the distributions include a generic kernel image for the specific platform. 
 These device drivers for the generic kernel image are included as loadable kernel modules because statically compiling many drivers into one kernel causes the kernel image to be much larger. This kernel might be too large to boot on computers with limited memory.
 
-### 3. Starting crypto module
-Let's use the **modprobe** command to load the device driver module. Initially the Linux system is not yet loaded with the crypto device driver modules, so you must load it manually. The cryptographic device driver consists of multiple,
+### 3. Loading crypto modules
+Let's use the **modprobe** command to load the device driver modules. Initially the Linux system is not yet configured to use  the crypto device driver modules, so you must load them manually. The cryptographic device drivers consists of multiple,
 separate modules.
 ```
 root@crypt06:~# modprobe aes_s390
@@ -105,7 +106,7 @@ root@crypt06:~# modprobe hmac
 ```
 
 ### 4. Pervasive Encryption readiness assessment
-Validate that all the crypto module are properly loaded. Please issue the following command:
+Validate that all the crypto modules are properly loaded. Please issue the following command:
 ```
 root@crypt06:~# lsmod | grep s390
 ghash_s390             16384  0
@@ -161,7 +162,7 @@ root@crypt06:~# icastats
 Your hands-on LAB environment is now properly setup!
 
 ## Pervasive Encryption - Enabling OpenSSL and openSSH to use the Hardware
-This chapter describes how to use the cryptographic functions of the LinuxONE to encrypt data in flight. This technique means that the data is encrypted and decrypted before and after it is transmitted. We will use OpenSSL, SCP and SFTP to demonstrate the encryption of data in flight. 
+This chapter describes how to use the cryptographic functions of the LinuxONE server to encrypt data in flight. This technique means that the data is encrypted and decrypted before and after it is transmitted. We will use OpenSSL, SCP and SFTP to demonstrate the encryption of data in flight. 
 This chapter also shows how to customize the product to use the LinuxONE hardware encryption features. This chapter includes the following sections:
 - Preparing to use openSSL
 - Configuring OpenSSL

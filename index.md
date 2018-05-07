@@ -14,7 +14,8 @@ The IBM Z and LinuxONE systems provide cryptographic functions that, from an app
 * Asynchronous cryptographic functions, provided by the Crypto Express features.
 The IBM Z and LinuxONE systems provide also rich cryptographic functions available via a complete crypto stack made of a set of key crypto APIs.
 ![Image of the Crypto Stack](https://github.com/guikarai/PE-LinuxONE/blob/master/crypto-stack.png)
-Note: Locate openSSL and dm-crypt. For the following, we will work on how set-up a Linux environment in order to benefit of Pervasive Encryption benefits.
+
+**Note:** Locate openSSL and dm-crypt. For the following, we will work on how set-up a Linux environment in order to benefit of Pervasive Encryption benefits.
   
 ## Enabling Linux to use the Hardware
 ### 1. CPACF Enablement verification
@@ -89,7 +90,7 @@ If the features list has msa listed, it means that CPACF is enabled. Most of the
 These device drivers for the generic kernel image are included as loadable kernel modules because statically compiling many drivers into one kernel causes the kernel image to be much larger. This kernel might be too large to boot on computers with limited memory.
 
 ### 3. Starting crypto module
-Let's use the modprobe command to load the device driver module. Initially the Linux system is not yet loaded with the crypto device driver modules, so you must load it manually. The cryptographic device driver consists of multiple,
+Let's use the **modprobe** command to load the device driver module. Initially the Linux system is not yet loaded with the crypto device driver modules, so you must load it manually. The cryptographic device driver consists of multiple,
 separate modules.
 ```
 root@crypt06:~# modprobe aes_s390
@@ -161,11 +162,10 @@ Your hands-on LAB environment is now properly setup!
 ## Pervasive Encryption - Enabling OpenSSL and openSSH to use the Hardware
 This chapter describes how to use the cryptographic functions of the LinuxONE to encrypt data in flight. This technique means that the data is encrypted and decrypted before and after it is transmitted. We will use OpenSSL, SCP and SFTP to demonstrate the encryption of data in flight. 
 This chapter also shows how to customize the product to use the LinuxONE hardware encryption features. This chapter includes the following sections:
-- Preparing to use OpenSSL
+- Preparing to use openSSL
 - Configuring OpenSSL
 - Testing Hardware Crypto functions with OpenSSL
 - Testing Hardware Crypto functions with SCP
-- Testing Hardware Crypto functions with SFTP
 
 ### 1. Preparing to use OpenSSL
 In the Linux system you use, OpenSSL is already instlaled, and the system is already enabled to use the cryptographic hardware of the LinuxONE. We also loaded the cryptographic device driver and the libica to use the crypto hardware. For the following, the following packages are required for encryption:
@@ -332,7 +332,9 @@ root@crypt06:~# icastats
      AES CMAC |         0              0 |         0             0
       AES XTS |         0              0 |         0             0
 ```
-As you can see, the libica API already detect some crypto offload to the hardware. Let's go deeper with some openSSL tests. Please issue the following command:
+As you can see, the libica API already detect some crypto offload to the hardware.
+
+Let's go deeper with some openSSL tests. Please issue the following command:
 ```
 root@crypt06:~# openssl speed -evp aes-128-cbc 
 Doing aes-128-cbc for 3s on 16 size blocks: 33394917 aes-128-cbc's in 2.83s
@@ -405,13 +407,17 @@ root@crypt06:~# icastats
      AES CMAC |         0              0 |         0             0
       AES XTS |         0              0 |         0             0
 ```
+**Note:** We can clearly see here the crypto offload in encryption operations. 96681976 operations was offloaded to the CPACF.
+**Note2:** We can clearly see here the crypto offload in decryption operations. 115370154 operations was offloaded to the CPACF.
 
 #### 3.2. Testing Pervasive encryption with scp
 Let's first clean the icastats monitoring.Please issue the following command:
 ```
 root@crypt06:~# icastats -r
 ```
-The previous command reset the icastats monitoring interface, and ease to interpret future result. To confirm the reset took place, please issue the following command:
+The previous command reset the icastats monitoring interface, and ease to interpret future result. 
+
+To confirm the reset took place, please issue the following command:
 ```
 root@crypt06:~# icastats
  function     |          # hardware      |       # software
@@ -449,20 +455,26 @@ root@crypt06:~# icastats
       AES XTS |         0              0 |         0             0
 ```
 
-Let's now create a 512MB file that we will use later for a secure file transfer. Please issue the following command and note that it will take less than a minute:
+Let's now create a 512MB file that we will use later for a secure file transfer. 
+
+Please issue the following command and note that it will take less than a minute:
 ```
 root@crypt06:~# dd if=/dev/urandom of=data.512M bs=64M count=8 iflag=fullblock
 8+0 records in
 8+0 records out
 536870912 bytes (537 MB, 512 MiB) copied, 45.9584 s, 11.7 MB/s
 ```
-You just created a 512MB file made of random value. The file is named data.512MB. You can confirm it issuing the following command:
+You just created a 512MB file made of random value. The file is named data.512MB.
+
+You can confirm it issuing the following command:
 ```
 root@crypt06:~# ls -hs
 total 512M
 512M data.512M
 ```
-Now, let's see the hardware crypto offload with the SCP network protocol. Please issue the following command, yes confirm if prompted, and enter your session password if prompted (azerty11):
+Now, let's see the hardware crypto offload with the SCP network protocol.
+
+Please issue the following command, yes confirm if prompted, and enter your session password if prompted (azerty11):
 ```
 The authenticity of host 'localhost (127.0.0.1)' can't be established.
 ECDSA key fingerprint is SHA256:IRiJuwD8Z8NF77bRUfNIfcIYEbocWMVT6RVcZh+FChs.
@@ -472,7 +484,9 @@ root@localhost's password: <----- azerty11
 
 data.512M                                                         100%  512MB 170.7MB/s   00:03
 ```
-As you can see, the defaut cipher suite transfered 512MB in 3 seconds, so a bandwidth of 170MB/s. Not so bad. Issue the icastats command agai to validate the hardware crypto offload:
+As you can see, the defaut cipher suite transfered 512MB in 3 seconds, so a bandwidth of 170MB/s. Not so bad.
+
+Issue the icastats command agai to validate the hardware crypto offload:
 ```
 root@crypt06:~# icastats
  function     |          # hardware      |       # software
@@ -509,8 +523,11 @@ root@crypt06:~# icastats
      AES CMAC |         0              0 |         0             0
       AES XTS |         0              0 |         0             0
 ```
+**Note:** Data integrity operation with sha1 and sha256 was correcly reported. AES is accelerated by default and is not reported because not passing by libica device driver.
 
-By default, scp doesn't use the best ciphers of IBM Z and LinuxONE. However, it is possible to specify it manually with -c option. Let's compare the defaut cipher performance with an optimized cipher. Please issue the following command:
+**Note2:** By default, scp doesn't use the best ciphers of IBM Z and LinuxONE. However, it is possible to specify it manually with -c option.
+
+Let's compare the defaut cipher performance with an optimized cipher. Please issue the following command:
 ```
 root@crypt06:~# scp -c aes256-ctr data.512M root@localhost:/dev/null
 root@localhost's password: 

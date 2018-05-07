@@ -543,14 +543,14 @@ data.512M                                                           100%  512MB 
 As you can see, with 256MB/s, we increased the throughput by 50%. So, beware default settings. Make sure to use hardware accelerated ciphers by IBM Z and LinuxONE.
 
 ## Pervasive Encryption - Enabling dm-crypt to use the Hardware
-The objective of this chapter, is to protect data at rest using dm-crypt in order to encrypt volume. dm-crypt is very interresting, because it helps to encrypt data without stopping running application.
+The objective of this chapter, is to protect data at rest using dm-crypt in order to encrypt volumes. dm-crypt is very interresting, in that it helps to encrypt data without stopping running applications.
 
-For the following, we will use LVM method to protect data at rest with dm-crypt at volume level. Objective will be to migrate data from unencrypted volume to dm-crypt volume. This is a 4 steps approach that doesn't required to reboot or to stop running application. 
+For the following, we will use LVM method to protect data at rest with dm-crypt at volume level. Objective will be to migrate data from an unencrypted volume to a (dm-crypt) encrypted volume. This is a 4 steps approach that doesn't required to reboot or to stop running application. 
 4 steps includes the following:
 * Step 1: Format a new encrypted volume with dm-crypt
 * Step 2: Add dm-crypt based physical volume to volume group
 * Step 3: Migrate data from non encrypted volume to encrypted volume
-* Step 4: Remove unencrypted volume from the volume group: vgreduce VG PV1
+* Step 4: Remove unencrypted volume from the volume group
 
 Let's do this for real now.
 
@@ -568,7 +568,7 @@ http://<your_lab_machine_ip>:8080/
 ![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/tomcat-running.png)
 
 ### 1. Installing cryptsetup
-The cryptsetup feature provides an interface for configuring encryption on block devices (such as /home or swap partitions), using the Linux kernel device mapper target dm-crypt. It features integrated LUKS support. LUKS standardizes the format of the encrypted disk, which allows different implementations, even from other operating systems, to access and decrypt the disk. 
+The cryptsetup feature provides an interface for configuring encryption on block devices (such as /home or swap partitions), using the Linux kernel device mapper target dm-crypt. It features integrated LUKS (Linux Unified Key Setup) support. LUKS standardizes the format of the encrypted disk, which allows different implementations, even from other operating systems, to access and decrypt the disk. 
 LUKS adds metadata to the underlying block device, which contains information about the ciphers used and a default of eight key slots that hold an encrypted version of the master key used to decrypt the device. 
 You can unlock the key slots by either providing a password on the command line or using a key file, which could, for example, be encrypted with gpg and stored on an NFS share.
 First of all, let's install cryptsetup, you can issue the following command:
@@ -581,10 +581,10 @@ cryptsetup is already the newest version (2:1.6.6-5ubuntu2.1).
 0 upgraded, 0 newly installed, 0 to remove and 106 not upgraded.
 ```
 
-The dm-crypt feature supports various cipher and hashing algorithms that you can select from the ones that are available in the Kernel and listed in the /proc/crypto procfs file. This also means that dm-crypt takes advantage of the unique hardware acceleration features of IBM Z that increase encryption and decryption speed.
+The dm-crypt feature supports various ciphers and hashing algorithms that you can select from the ones that are available in the Kernel and listed in the /proc/crypto procfs file. This also means that dm-crypt takes advantage of the unique hardware acceleration features of IBM Z that increase encryption and decryption speed.
 Using the cryptsetup command, create a LUKS partition on the respective disk devices. For full disk encryption, use the AES xts hardware feature. We choose the AES-xts to achieve a security level of reasonable quality with the best encryption mode.
 
-To confirm that is the best choise, you can issue the following command:
+To confirm that is the best choice, you can issue the following command:
 ```
 [root@crypt06:~# cryptsetup benchmark
 # Tests are approximate using memory only (no storage IO).
@@ -616,6 +616,10 @@ root@crypt06:~# pvs
   /dev/dasdc1      lvm2 ---  10.00g 10.00g
   /dev/dasdd1 vg01 lvm2 a--  10.00g     0
 ```
+
+**Note:** There is one physical volume which is not yet part of any volume group. This is the disk we'll use with cryptsetup.
+In this example, this device is /dev/dasdc1. Yours may be different.
+
 #### 2.2. Initial volume group assessment
 ```
 root@crypt06:~# vgs
@@ -630,16 +634,16 @@ root@crypt06:~# lvs
   lv01 vg01 -wi-ao---- 10.00g
 ```
 
-### 3.1 Step 1 - Formating and encrypting a new volume
+### 3.1 Step 1 - Formatting and encrypting a new volume
 In the following step, we will format and encrypt an existing volume.
 ![Step1](https://github.com/guikarai/PE-LinuxONE/blob/master/step1.png)
 
 ```
-[root@ghrhel74crypt ~]# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/vdc1
+root@crypt06:~# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/dasdc1
 
 WARNING!
 ========
-This will overwrite data on /dev/vdc1 irrevocably.
+This will overwrite data on /dev/dasdc1 irrevocably.
 
 Are you sure? (Type uppercase yes): YES
 Enter passphrase: 
@@ -647,22 +651,8 @@ Verify passphrase: 
 ```
 
 ```
-[root@ghrhel74crypt ~]# cryptsetup luksOpen /dev/vdc1 ihscrypt
-Enter passphrase for /dev/vdc1: 
-```
-
-```
-[root@ghrhel74crypt ~]# ls /dev/m
-mapper/ mem     mqueue/ 
-```
-```
-[root@ghrhel74crypt ~]# ls /dev/mapper/
-control  ihscrypt  ihsvg-ihslv
-```
-
-```
-[root@ghrhel74crypt ~]# pvcreate /dev/mapper/ihscrypt 
-  Physical volume "/dev/mapper/ihscrypt" successfully created.
+root@crypt06:~# cryptsetup luksOpen /dev/dasdcc1 dockercrypt
+Enter passphrase for /dev/dasdc1: 
 ```
 
 ### 3.2 Step 2 - Add dm-crypt based physical volume to volume group
@@ -670,20 +660,25 @@ In this second step, we will add the encrypted volume into the existing volume g
 ![Step2](https://github.com/guikarai/PE-LinuxONE/blob/master/step2.png)
 
 ```
-[root@ghrhel74crypt ~]# vgextend ihsvg /dev/mapper/ihscrypt 
-  Volume group "ihsvg" successfully extended
-```
-```
-[root@probtp-ihs dev]# vgs
-  VG    #PV #LV #SN Attr   VSize  VFree  
-  ihsvg   2   1   0 wz--n- 49.99g <25.00g
+root@crypt06:~# pvcreate /dev/mapper/dockercrypt 
+  Physical volume "/dev/mapper/dockercrypt" successfully created.
 ```
 
 ```
-[root@ghrhel74crypt ~]# pvs
-  PV                   VG    Fmt  Attr PSize   PFree  
-  /dev/mapper/ihscrypt ihsvg lvm2 a--  <25.00g <25.00g
-  /dev/vdb1            ihsvg lvm2 a--  <25.00g      0 
+root@crypt06:~# vgextend vg01 /dev/mapper/dockercrypt 
+  Volume group "vg01" successfully extended
+```
+```
+root@crypt06:~# vgs
+  VG    #PV #LV #SN Attr   VSize  VFree  
+  vg01   2   1   0 wz--n- 49.99g <25.00g
+```
+
+```
+root@crypt06:~# pvs
+  PV                      VG    Fmt  Attr PSize   PFree  
+  /dev/mapper/dockercrypt vg01  lvm2 a--  10.00g  10.00g
+  /dev/dasdd1             vg01  lvm2 a--  10.00g      0 
 ```
 
 ### 3.3 Step 3 - Migrate data from non encrypted volume to encrypted volume
@@ -692,35 +687,35 @@ In this third step, we will migrate unencrypted data in the uncrypted physical v
 
 Please issue to following command to proceede:
 ```
-[root@ghrhel74crypt ~]# pvmove /dev/vdb1 /dev/mapper/ihscrypt 
-  /dev/vdb1: Moved: 0.00%
-  /dev/vdb1: Moved: 4.83%
-  /dev/vdb1: Moved: 9.24%
-  /dev/vdb1: Moved: 13.13%
-  /dev/vdb1: Moved: 17.16%
-  /dev/vdb1: Moved: 22.02%
-  /dev/vdb1: Moved: 27.55%
-  /dev/vdb1: Moved: 33.08%
-  /dev/vdb1: Moved: 36.91%
-  /dev/vdb1: Moved: 40.98%
-  /dev/vdb1: Moved: 45.46%
-  /dev/vdb1: Moved: 48.55%
-  /dev/vdb1: Moved: 50.91%
-  /dev/vdb1: Moved: 53.52%
-  /dev/vdb1: Moved: 57.02%
-  /dev/vdb1: Moved: 59.99%
-  /dev/vdb1: Moved: 63.03%
-  /dev/vdb1: Moved: 66.34%
-  /dev/vdb1: Moved: 69.78%
-  /dev/vdb1: Moved: 73.37%
-  /dev/vdb1: Moved: 76.53%
-  /dev/vdb1: Moved: 79.93%
-  /dev/vdb1: Moved: 83.43%
-  /dev/vdb1: Moved: 86.83%
-  /dev/vdb1: Moved: 90.47%
-  /dev/vdb1: Moved: 95.17%
-  /dev/vdb1: Moved: 98.56%
-  /dev/vdb1: Moved: 100.00%
+root@crypt06:~# pvmove /dev/dasdd1 /dev/mapper/dockercrypt
+  /dev/dasdd1: Moved: 0.00%
+  /dev/dasdd1: Moved: 4.83%
+  /dev/dasdd1: Moved: 9.24%
+  /dev/dasdd1: Moved: 13.13%
+  /dev/dasdd1: Moved: 17.16%
+  /dev/dasdd1: Moved: 22.02%
+  /dev/dasdd1: Moved: 27.55%
+  /dev/dasdd1: Moved: 33.08%
+  /dev/dasdd1: Moved: 36.91%
+  /dev/dasdd1: Moved: 40.98%
+  /dev/dasdd1: Moved: 45.46%
+  /dev/dasdd1: Moved: 48.55%
+  /dev/dasdd1: Moved: 50.91%
+  /dev/dasdd1: Moved: 53.52%
+  /dev/dasdd1: Moved: 57.02%
+  /dev/dasdd1: Moved: 59.99%
+  /dev/dasdd1: Moved: 63.03%
+  /dev/dasdd1: Moved: 66.34%
+  /dev/dasdd1: Moved: 69.78%
+  /dev/dasdd1: Moved: 73.37%
+  /dev/dasdd1: Moved: 76.53%
+  /dev/dasdd1: Moved: 79.93%
+  /dev/dasdd1: Moved: 83.43%
+  /dev/dasdd1: Moved: 86.83%
+  /dev/dasdd1: Moved: 90.47%
+  /dev/dasdd1: Moved: 95.17%
+  /dev/dasdd1: Moved: 98.56%
+  /dev/dasdd1: Moved: 100.00%
 ```
 
 ### 3.4 Step 4 - Remove unencrypted volume from the volume group
@@ -729,16 +724,16 @@ Fourth and last step. It is time to remove from the volume group, the volume tha
 
 Do do so, we will use the **vgreduce**. Please issue the following command:
 ```
-[root@ghrhel74crypt ~]# vgreduce ihsvg /dev/vdb1
-  Removed "/dev/vdb1" from volume group "ihsvg"
+root@crypt06:~# vgreduce vg01 /dev/dasdd1
+  Removed "/dev/dasdd1" from volume group "ihsvg"
 ```
 
 ```
-[root@ghrhel74crypt ~]# lvs
-  LV    VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
-  ihslv ihsvg -wi-ao---- <25.00g                                                    
+root@crypt06:~# lvs
+  LV   VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lv01 vg01  -wi-ao---- 10.00g                                                    
 ```
-Now, application run 100% on a encrypted volume. Let's check if application are still running. Please issue the following command:
+Now, application run 100% on a encrypted volume. Let's check if application is still running. Please issue the following command:
 ```
 root@crypt06:~# docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES

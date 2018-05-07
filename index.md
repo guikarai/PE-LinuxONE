@@ -9,7 +9,7 @@ The IBM Z and LinuxONE systems provide cryptographic functions that, from an app
 * Synchronous cryptographic functions, provided by the CP Assist for Cryptographic Function (CPACF) or the Crypto Express features when defined as an accelerator.
 * Asynchronous cryptographic functions, provided by the Crypto Express features.
 The IBM Z and LinuxONE systems provide also rich cryptographic functions available via a complete crypto stack made of a set of key crypto APIs.
-<crypto stack here>
+![Image of the Crypto Stack](https://github.com/guikarai/PE-LinuxONE/master/crypto-stack.png)
   
 ## Hands-on LAB Agenda
 ### Part I - Enabling Linux to use the Hardware

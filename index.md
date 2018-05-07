@@ -479,7 +479,7 @@ Are you sure you want to continue connecting (yes/no)? yes
 Warning: Permanently added 'localhost' (ECDSA) to the list of known hosts.
 root@localhost's password: <----- azerty11
 
-data.512M                                                                       100%  512MB 170.7MB/s   00:03
+data.512M                                                         100%  512MB 170.7MB/s   00:03
 ```
 As you can see, the defaut cipher suite transfered 512MB in 3 seconds, so a bandwidth of 170MB/s. Not so bad. Issue the icastats command agai to validate the hardware crypto offload:
 ```
@@ -523,9 +523,9 @@ By default, scp doesn't use the best ciphers of IBM Z and LinuxONE. However, it 
 ```
 root@crypt06:~# scp -c aes256-ctr data.512M root@localhost:/dev/null
 root@localhost's password: 
-data.512M                                                                                   100%  512MB 256.0MB/s   00:02
+data.512M                                                           100%  512MB 256.0MB/s   00:02
 ```
-As you can see, we doubled the throughput. So, beware default settings, and use hardware accelerated ciphers by IBM Z and LinuxONE.
+As you can see, with 256MB/S, we increased 50% the throughput. So, beware default settings, and use hardware accelerated ciphers by IBM Z and LinuxONE.
 
 ### Pervasive Encryption - Enabling dm-crypt to use the Hardware
 

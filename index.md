@@ -18,10 +18,7 @@ Note: Locate openSSL and dm-crypt. For the following, we will work on how set-up
   
 ## Enabling Linux to use the Hardware
 ### 1. CPACF Enablement verification
-A Linux on IBM Z user can easily check whether the Crypto Enablement feature is installed
-and which algorithms are supported in hardware. Hardware-acceleration for DES, TDES,
-AES, and GHASH requires CPACF.
-Issue the following command /proc/cpuinfo to discover whether the CPACF feature is enabled
+A Linux on IBM Z user can easily check whether the Crypto Enablement feature is installed and which algorithms are supported in hardware. Hardware-acceleration for DES, TDES, AES, and GHASH requires CPACF. Issue the following command /proc/cpuinfo to discover whether the CPACF feature is enabled
 on your hardware.
 ```
 root@crypt06:~# cat /proc/cpuinfo 
@@ -38,13 +35,16 @@ cache5          : level=4 type=Unified scope=Shared size=688128K line_size=256 a
 processor 0: version = FF,  identification = 233EF7,  machine = 3906
 processor 1: version = FF,  identification = 233EF7,  machine = 3906
 ```
+**Note**: msa on line 4, indicates that the CPACF instruction is properly supported and detected.
+**Note 2**: vx on line 4, indicates that SIMD and vector instructions are properly supported and detected.
+
 ### 2. Installing libica
 To make use of the libica hardware support for cryptographic functions, you must install the libica. Obtain the current libica version from your distribution provider for automated installation. Please issue the following command:
 ```
 root@crypt06:~# sudo apt-get install libica-utils
 ```
-
-After the libica utility is installed, use the icaiinfo command to check on the CPACF feature code enablement. If the Crypto Enablement feature 3863 is installed, you will see that besides SHA, other algorithms are available with hardware support. The icainfo command displays which CPACF functions are supported by the implementation inside the libica library. Issue the following command to show that the device driver loaded how which cryptographic algorithms will be accelerated and hardware or software way.
+After the libica utility is installed, use the **icainfo** command to check on the CPACF feature code enablement. 
+The icainfo command displays which CPACF functions are supported by the implementation inside the libica library. Issue the following command to show that the device driver loaded how which cryptographic algorithms will be accelerated and hardware or software way.
 ```
 root@crypt06:~# icainfo
 The following CP Assist for Cryptographic Function (CPACF) 
@@ -82,10 +82,12 @@ operations are supported by libica on this system:
        AES XTS |    yes     |      no
 ```
 
-From the cpuinfo output, you can find the features that are enabled in the central processors. If the features list has msa listed, it means that CPACF is enabled. Most of the distributions include a generic kernel image for the specific platform. These device drivers for the generic kernel image are included as loadable kernel modules because statically compiling many drivers into one kernel causes the kernel image to be much larger. This kernel might be too large to boot on computers with limited memory.
+From the **cpuinfo** output, you can find the features that are enabled in the central processors. 
+If the features list has msa listed, it means that CPACF is enabled. Most of the distributions include a generic kernel image for the specific platform. 
+These device drivers for the generic kernel image are included as loadable kernel modules because statically compiling many drivers into one kernel causes the kernel image to be much larger. This kernel might be too large to boot on computers with limited memory.
 
 ### 3. Starting crypto module
-Use the lsmod command to check whether the crypto device driver module is already loaded. If the module is not loaded, use the modprobe command to load the device driver module. If it shows that the Linux system is not yet loaded with the crypto device driver modules, so you must load it manually. The cryptographic device driver consists of multiple,
+Let's use the modprobe command to load the device driver module. Initially the Linux system is not yet loaded with the crypto device driver modules, so you must load it manually. The cryptographic device driver consists of multiple,
 separate modules.
 ```
 root@crypt06:~# modprobe aes_s390
@@ -149,6 +151,8 @@ root@crypt06:~# icastats
      AES CMAC |         0              0 |         0             0
       AES XTS |         0              0 |         0             0
 ```
+**Note:** As you can see, there is already some crypto offload regarding DRBG-SHA-512. That is a good start ;D
+**Note 2:** For your information, DRBG stands for Deterministic Random Bits Generator. It is an algorithm for generating a sequence of numbers whose properties approximate the properties of sequences of random numbers.
 
 Your hands-on LAB environment is now properly setup!
 

@@ -684,6 +684,7 @@ In this second step, we will add the encrypted volume into the existing volume g
 ### 3.3 Step 3 - Migrate data from non encrypted volume to encrypted volume
 In this third step, we will migrate unencrypted data in the uncrypted physical volume to the encrypted physical volume. This operation thanks to the **pvmove** switch update from the source PV to the destination PV once completed. This command doesn't halt running application. This operation can take some time. 
 ![Step3](https://github.com/guikarai/PE-LinuxONE/blob/master/step3.png)
+
 Please issue to following command to proceede:
 ```
 [root@ghrhel74crypt ~]# pvmove /dev/vdb1 /dev/mapper/ihscrypt 
@@ -720,6 +721,7 @@ Please issue to following command to proceede:
 ### 3.4 Step 4 - Remove unencrypted volume from the volume group
 Fourth and last step. It is time to remove from the volume group, the volume that is unencrypted, we don't need it anymore.
 ![Step4](https://github.com/guikarai/PE-LinuxONE/blob/master/step4.png)
+
 Do do so, we will use the **vgreduce**. Please issue the following command:
 ```
 [root@ghrhel74crypt ~]# vgreduce ihsvg /dev/vdb1

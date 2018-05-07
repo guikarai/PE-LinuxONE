@@ -17,7 +17,7 @@ The IBM Z and LinuxONE systems provide also rich cryptographic functions availab
 Note: Locate openSSL and dm-crypt. For the following, we will work on how set-up a Linux environment in order to benefit of Pervasive Encryption benefits.
   
 ## Enabling Linux to use the Hardware
-### CPACF Enablement verification
+### 1. CPACF Enablement verification
 A Linux on IBM Z user can easily check whether the Crypto Enablement feature is installed
 and which algorithms are supported in hardware. Hardware-acceleration for DES, TDES,
 AES, and GHASH requires CPACF.
@@ -38,7 +38,7 @@ cache5          : level=4 type=Unified scope=Shared size=688128K line_size=256 a
 processor 0: version = FF,  identification = 233EF7,  machine = 3906
 processor 1: version = FF,  identification = 233EF7,  machine = 3906
 ```
-### Installing libica
+### 2. Installing libica
 To make use of the libica hardware support for cryptographic functions, you must install the libica. Obtain the current libica version from your distribution provider for automated installation. Please issue the following command:
 ```
 root@crypt06:~# sudo apt-get install libica-utils
@@ -84,7 +84,7 @@ operations are supported by libica on this system:
 
 From the cpuinfo output, you can find the features that are enabled in the central processors. If the features list has msa listed, it means that CPACF is enabled. Most of the distributions include a generic kernel image for the specific platform. These device drivers for the generic kernel image are included as loadable kernel modules because statically compiling many drivers into one kernel causes the kernel image to be much larger. This kernel might be too large to boot on computers with limited memory.
 
-### Starting crypto module
+### 3. Starting crypto module
 Use the lsmod command to check whether the crypto device driver module is already loaded. If the module is not loaded, use the modprobe command to load the device driver module. If it shows that the Linux system is not yet loaded with the crypto device driver modules, so you must load it manually. The cryptographic device driver consists of multiple,
 separate modules.
 ```
@@ -98,7 +98,7 @@ root@crypt06:~# modprobe prng
 root@crypt06:~# modprobe hmac
 ```
 
-### Pervasive Encryption readiness assessment
+### 4. Pervasive Encryption readiness assessment
 Validate that all the crypto module are properly loaded. Please issue the following command:
 ```
 root@crypt06:~# lsmod | grep s390
@@ -161,7 +161,7 @@ This chapter also shows how to customize the product to use the LinuxONE hardwar
 - Testing Hardware Crypto functions with SCP
 - Testing Hardware Crypto functions with SFTP
 
-### Preparing to use OpenSSL
+### 1. Preparing to use OpenSSL
 In the Linux system you use, OpenSSL is already instlaled, and the system is already enabled to use the cryptographic hardware of the LinuxONE. We also loaded the cryptographic device driver and the libica to use the crypto hardware. For the following, the following packages are required for encryption:
 - openssl
 - openssl-libs
@@ -176,14 +176,14 @@ Now all needed packages are successfully installed. At this moment only the defa
 root@crypt06:~# openssl engine -c
 (dynamic) Dynamic engine loading support
 ```
-### Configuring OpenSSL
+### 2. Configuring OpenSSL
 To use the ibmca engine and to benefit from the Cryptographic hardware support, the configuration file of OpenSSL needs to be modified. To customize the OpenSSL configuration to enable dynamic engine loading for ibmca, complete the following steps:
-#### 1/ Locate the OpenSSL configuration file, which in our Ubuntu 16.04.3 LTS distribution is in this subdirectory: 
+#### 2.1. Locate the OpenSSL configuration file, which in our Ubuntu 16.04.3 LTS distribution is in this subdirectory: 
 ```
 root@crypt06:~# ls /usr/share/doc/openssl-ibmca/examples
 ```
 
-#### 2/ Make a backup copy of the configuration file
+#### 2.2. Make a backup copy of the configuration file
 Locate the main configuration file of openssl. Its name is openssl.cnf. Please issue the following command:
 ```
 root@crypt06:~# ls -la /etc/ssl/openssl.cnf
@@ -200,7 +200,7 @@ root@crypt06:~# ls -al /etc/ssl/openssl.cnf*
 -rw-r--r-- 1 root root 10835 Dec  7 21:43 /etc/ssl/openssl.cnf.backup
 ```
 
-#### 3 / Append the ibmca-related configuration lines to the OpenSSL configuration file
+#### 2.3. Append the ibmca-related configuration lines to the OpenSSL configuration file
 ```
 root@crypt06:~# tee -a /etc/ssl/openssl.cnf < /usr/share/doc/openssl-ibmca/examples/openssl.cnf.sample
 #
@@ -257,7 +257,7 @@ default_algorithms = ALL
 #default_algorithms = RAND,RSA,CIPHERS,DIGESTS
 ```
 
-#### 4 / Append the ibmca-related configuration lines to the OpenSSL configuration file
+#### 2.4. Append the ibmca-related configuration lines to the OpenSSL configuration file
 The reference to the ibmca section in the OpenSSL configuration file needs to be inserted. Therefore, insert the following line as show below at the line 10.
 "openssl_conf = openssl_def"
 ```
@@ -279,7 +279,7 @@ oid_section = new_oids
 # X.509v3 extensions to use:
 ```
 
-### Testing Hardware Crypto functions
+### 3. Checking Hardware Crypto functions
 Now that the customization of OpenSSL in done, test whether you can use the LinuxONE hardware cryptographic functions. First, let's check whether the dynamic engine loading support is enabled by default and the engine ibmca is available and used in the installation.
 ```
 root@crypt06:~# openssl engine -c
@@ -288,7 +288,7 @@ root@crypt06:~# openssl engine -c
  [RAND, DES-ECB, DES-CBC, DES-OFB, DES-CFB, DES-EDE3, DES-EDE3-CBC, DES-EDE3-OFB, DES-EDE3-CFB, AES-128-ECB, AES-192-ECB, AES-256-ECB, AES-128-CBC, AES-192-CBC, AES-256-CBC, AES-128-OFB, AES-192-OFB, AES-256-OFB, AES-128-CFB, AES-192-CFB, AES-256-CFB, SHA1, SHA256, SHA512]
 ```
 
-### Testing Pervasive encryption with OpenSSL
+#### 3.1. Testing Pervasive encryption with OpenSSL
 Now openSSL is properly configured. All crypto operation passing through openSSL will be hardware accelerated if possible. Let's test it in live. Firt of all, let's have a look of the hardware crypto offload status. Please issue the following command:
 ```
 root@crypt06:~# icastats
@@ -400,7 +400,7 @@ root@crypt06:~# icastats
       AES XTS |         0              0 |         0             0
 ```
 
-### Testing Pervasive encryption with scp
+#### 3.2. Testing Pervasive encryption with scp
 Let's first clean the icastats monitoring.Please issue the following command:
 ```
 root@crypt06:~# icastats -r
@@ -513,7 +513,17 @@ data.512M                                                           100%  512MB 
 As you can see, with 256MB/S, we increased 50% the throughput. So, beware default settings, and use hardware accelerated ciphers by IBM Z and LinuxONE.
 
 ## Pervasive Encryption - Enabling dm-crypt to use the Hardware
-The objective of this chapter, is to protect data at rest using dm-crypt in order to encrypt volume. dm-crypt is very interresting, because it helps to encrypt data without stopping running application. 
+The objective of this chapter, is to protect data at rest using dm-crypt in order to encrypt volume. dm-crypt is very interresting, because it helps to encrypt data without stopping running application.
+
+For the following, we will use LVM method to protect data at rest with dm-crypt at volume level. Objective will be to migrate data from unencrypted volume to dm-crypt volume. This is a 4 steps approach that doesn't required to reboot or to stop running application. 
+4 steps includes the following:
+* Step 1: Format a new encrypted volume with dm-crypt
+* Step 2: Add dm-crypt based physical volume to volume group
+* Step 3: Migrate data from non encrypted volume to encrypted volume
+* Step 4: Remove unencrypted volume from the volume group: vgreduce VG PV1
+
+Let's do this for real now.
+
 In your lab machine environnement there is an application running in a docker container (tomcat server). Please issue the following command:
 ```
 root@crypt06:~# docker ps
@@ -527,7 +537,7 @@ http://<your_lab_machine_ip>:8080/
 ```
 ![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/tomcat-running.png)
 
-### Installing cryptsetup
+### 1. Installing cryptsetup
 The cryptsetup feature provides an interface for configuring encryption on block devices (such as /home or swap partitions), using the Linux kernel device mapper target dm-crypt. It features integrated LUKS support. LUKS standardizes the format of the encrypted disk, which allows different implementations, even from other operating systems, to access and decrypt the disk. 
 LUKS adds metadata to the underlying block device, which contains information about the ciphers used and a default of eight key slots that hold an encrypted version of the master key used to decrypt the device. 
 You can unlock the key slots by either providing a password on the command line or using a key file, which could, for example, be encrypted with gpg and stored on an NFS share.
@@ -568,38 +578,29 @@ PBKDF2-whirlpool  179796 iterations per second
  twofish-xts   512b   163.0 MiB/s   165.0 MiB/s
 
 ```
-### Using dm-crypt Volumes as LVM Physical Volumes
-For the following, we will use LVM method to protect data at rest with dm-crypt at volume level. Objective will be to migrate data from unencrypted volume to dm-crypt volume. This is a 4 steps approach that doesn't required to reboot or to stop running application. 
-4 steps includes the following:
-* Step 1: Format a new encrypted volume with dm-crypt
-* Step 2: Add dm-crypt based physical volume to volume group
-* Step 3: Migrate data from non encrypted volume to encrypted volume
-* Step 4: Remove unencrypted volume from the volume group: vgreduce VG PV1
-
-Let's do this for real now.
-
-#### Initial physical volume assessment
+### 2. Using dm-crypt Volumes as LVM Physical Volumes
+#### 2.1. Initial physical volume assessment
 ```
 root@crypt06:~# pvs
   PV          VG   Fmt  Attr PSize  PFree 
   /dev/dasdc1      lvm2 ---  10.00g 10.00g
   /dev/dasdd1 vg01 lvm2 a--  10.00g     0
 ```
-#### Initial volume group assessment
+#### 2.2. Initial volume group assessment
 ```
 root@crypt06:~# vgs
   VG   #PV #LV #SN Attr   VSize  VFree
   vg01   1   1   0 wz--n- 10.00g    0
 ```
 
-#### Initial logical volume assessment
+#### 2.3. Initial logical volume assessment
 ```
 root@crypt06:~# lvs
   LV   VG   Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
   lv01 vg01 -wi-ao---- 10.00g
 ```
 
-### Step 1 - Formating and encrypting a new volume
+### 3.1 Step 1 - Formating and encrypting a new volume
 ```
 [root@ghrhel74crypt ~]# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/vdc1
 
@@ -631,7 +632,7 @@ control  ihscrypt  ihsvg-ihslv
   Physical volume "/dev/mapper/ihscrypt" successfully created.
 ```
 
-### Step 2 - Add dm-crypt based physical volume to volume group
+### 3.2 Step 2 - Add dm-crypt based physical volume to volume group
 ```
 [root@ghrhel74crypt ~]# vgextend ihsvg /dev/mapper/ihscrypt 
   Volume group "ihsvg" successfully extended
@@ -649,7 +650,7 @@ control  ihscrypt  ihsvg-ihslv
   /dev/vdb1            ihsvg lvm2 a--  <25.00g      0 
 ```
 
-### Step 3 - Migrate data from non encrypted volume to encrypted volume
+### 3.2 Step 3 - Migrate data from non encrypted volume to encrypted volume
 ```
 [root@ghrhel74crypt ~]# pvmove /dev/vdb1 /dev/mapper/ihscrypt 
   /dev/vdb1: Moved: 0.00%
@@ -682,7 +683,7 @@ control  ihscrypt  ihsvg-ihslv
   /dev/vdb1: Moved: 100.00%
 ```
 
-### Step 4 - Remove unencrypted volume from the volume group
+### 3.2 Step 4 - Remove unencrypted volume from the volume group
 ```
 [root@ghrhel74crypt ~]# vgreduce ihsvg /dev/vdb1
   Removed "/dev/vdb1" from volume group "ihsvg"

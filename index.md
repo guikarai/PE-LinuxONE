@@ -52,27 +52,21 @@ root@crypt06:~# sudo apt-get install libica-utils
 
 After the libica utility is installed, use the icaiinfo command to check on the CPACF feature code enablement. If the Crypto Enablement feature 3863 is installed, you will see that besides SHA, other algorithms are available with hardware support. The icainfo command displays which CPACF functions are supported by the implementation inside the libica library. Issue the following command to show that the device driver loaded how which cryptographic algorithms will be accelerated and hardware or software way.
 ```
-[root@ghrhel74crypt ~]# icainfo
-      Cryptographic algorithm support      
--------------------------------------------
- function      |  hardware  |  software  
----------------+------------+------------
+root@crypt06:~# icainfo
+The following CP Assist for Cryptographic Function (CPACF) 
+operations are supported by libica on this system:
+ function      | # hardware | #software
+---------------+------------+--------------
          SHA-1 |    yes     |     yes
        SHA-224 |    yes     |     yes
        SHA-256 |    yes     |     yes
        SHA-384 |    yes     |     yes
        SHA-512 |    yes     |     yes
-      SHA3-224 |    yes     |      no
-      SHA3-256 |    yes     |      no
-      SHA3-384 |    yes     |      no
-      SHA3-512 |    yes     |      no
-     SHAKE-128 |    yes     |      no
-     SHAKE-256 |    yes     |      no
          GHASH |    yes     |      no
          P_RNG |    yes     |     yes
   DRBG-SHA-512 |    yes     |     yes
-        RSA ME |    yes     |     yes
-       RSA CRT |    yes     |     yes
+        RSA ME |     no     |     yes
+       RSA CRT |     no     |     yes
        DES ECB |    yes     |     yes
        DES CBC |    yes     |     yes
        DES OFB |    yes     |      no
@@ -92,9 +86,6 @@ After the libica utility is installed, use the icaiinfo command to check on the 
        AES CTR |    yes     |      no
       AES CMAC |    yes     |      no
        AES XTS |    yes     |      no
-       AES GCM |    yes     |      no
--------------------------------------------
-No built-in FIPS support.
 ```
 
 From the cpuinfo output, you can find the features that are enabled in the central processors.

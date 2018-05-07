@@ -1,25 +1,15 @@
-# Hands-on LAB - Pervasive Encryption on LinuxONE
-As of March 2018, the LinuxONE has two categories of crypto hardware.
-- CPACF – Provides support for symmetric ciphers and secure hash algorithms (SHA) on every central processor. The potential encryption/decryption throughput scales with the number of CPs.
-- CEX6S – The Crypto Express feature traditionally could be configured in two ways: Either as cryptographic Coprocessor (CEXC) for secure key encrypted transactions, or as cryptographic Accelerator (CEXA) for Secure Sockets Layer (SSL) acceleration. A CEXA works in clear key mode. The Crypto Express 6S allows for a third mode as a Secure IBM CCA Coprocessor.
-
-## LinuxONE Crypto Background
-OpenSSL needs the engine ibmca to communicate with the interface library (libICA). The libICA library then communicates with CPACF or via the Linux generic device driver z90crypt with a CEX (if available). The device driver z90crypt must be loaded in order to use CEX features.
-
-We know many potential exploiters, and not limited to the following list:
-- WebSphere Application Server/Portal
-- Java Applications
-- IBM HTTP Server
-- Apache
-- WebSphere Plugin
-- Linux SSH, SFTP , SCP
-- In Kernel Crypto Exploiters
-- DM-Crypt
-- IPSec
-...
+# About Pervasive Encryption on LinuxONE
+Pervasive encryption is a data-centric approach to information security that entails protecting data entering and exiting the z14 platform. It involves encrypting data in-flight and at-rest to meet complex compliance mandates and reduce the risks and financial losses of a data breach. It is a paradigm shift from selective encryption (where only the data that is required to achieve compliance is encrypted) to pervasive encryption. Pervasive encryption with z14 is enabled through tight platform integration that includes Linux on IBM Z or LinuxONE following features:
+* Integrated cryptographic hardware: Central Processor Assist for Cryptographic Function (CPACF) is a co-processor on every processor unit that accelerates encryption. Crypto Express features can be used as hardware security modules (HSMs).
+* Data set and file encryption: You can protect Linux file systems that is transparent to applications and databases.
+* Network encryption: You can protect network data traffic by using standards-based encryption from endpoint to endpoint.
 
 ## LinuxONE Crypto Stack
-<crypto stack picture here>
+The IBM Z and LinuxONE systems provide cryptographic functions that, from an application program perspective, can be grouped as follows:
+* Synchronous cryptographic functions, provided by the CP Assist for Cryptographic Function (CPACF) or the Crypto Express features when defined as an accelerator.
+* Asynchronous cryptographic functions, provided by the Crypto Express features.
+The IBM Z and LinuxONE systems provide also rich cryptographic functions available via a complete crypto stack made of a set of key crypto APIs.
+<crypto stack here>
   
 ## Hands-on LAB Agenda
 ### Part I - Enabling Linux to use the Hardware

@@ -157,6 +157,7 @@ root@crypt06:~# icastats
       AES XTS |         0              0 |         0             0
 ```
 **Note:** As you can see, there is already some crypto offload regarding DRBG-SHA-512. That is a good start ;D
+
 **Note 2:** For your information, DRBG stands for Deterministic Random Bits Generator. It is an algorithm for generating a sequence of numbers whose properties approximate the properties of sequences of random numbers.
 
 Your hands-on LAB environment is now properly setup!

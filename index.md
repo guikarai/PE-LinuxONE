@@ -5,11 +5,16 @@ Pervasive encryption is a data-centric approach to information security that ent
 * Network encryption: You can protect network data traffic by using standards-based encryption from endpoint to endpoint.
 
 ## LinuxONE Crypto Stack
+Pervasive Encryption benefits of the full Power of Linux Ecosystem plus z14 Capabilities
+* LUKS dm-crypt – Transparent file & volume encryption using industry unique CPACF protected-keys
+* Network Security – Enterprise scale encryption and handshakes using z14 CPACF and SIMD (openSSL, IPSec...)
+
 The IBM Z and LinuxONE systems provide cryptographic functions that, from an application program perspective, can be grouped as follows:
 * Synchronous cryptographic functions, provided by the CP Assist for Cryptographic Function (CPACF) or the Crypto Express features when defined as an accelerator.
 * Asynchronous cryptographic functions, provided by the Crypto Express features.
 The IBM Z and LinuxONE systems provide also rich cryptographic functions available via a complete crypto stack made of a set of key crypto APIs.
 ![Image of the Crypto Stack](https://github.com/guikarai/PE-LinuxONE/blob/master/crypto-stack.png)
+Note: Locate openSSL and dm-crypt. For the following, we will work on how setting-up a Linux environment in order to
   
 ## Hands-on LAB Agenda
 ### Part I - Enabling Linux to use the Hardware

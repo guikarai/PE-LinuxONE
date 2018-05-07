@@ -528,6 +528,189 @@ data.512M                                                           100%  512MB 
 As you can see, with 256MB/S, we increased 50% the throughput. So, beware default settings, and use hardware accelerated ciphers by IBM Z and LinuxONE.
 
 ### Pervasive Encryption - Enabling dm-crypt to use the Hardware
+The objective of this chapter, is to protect data at rest using dm-crypt in order to encrypt volume. dm-crypt is very interresting, because it helps to encrypt data without stopping running application. 
+In your lab machine environnement there is an application running in a docker container (tomcat server). Please issue the following command:
+```
+root@crypt06:~# docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES
+a96459e351d6        s390x/tomcat:jre9   "catalina.sh run"   2 days ago          Up 2 days           0.0.0.0:8080->8080/tcp   upbeat_kare
+```
 
+You can also confirm that the application is running using a web-browser and checking the url:
+```
+http://<your_lab_machine_ip>:8080/
+```
 
-Thank you, and see you soon.
+#### Installing cryptsetup
+The cryptsetup feature provides an interface for configuring encryption on block devices (such as /home or swap partitions), using the Linux kernel device mapper target dm-crypt. It features integrated LUKS support. LUKS standardizes the format of the encrypted disk, which allows different implementations, even from other operating systems, to access and decrypt the disk. 
+LUKS adds metadata to the underlying block device, which contains information about the ciphers used and a default of eight key slots that hold an encrypted version of the master key used to decrypt the device. 
+You can unlock the key slots by either providing a password on the command line or using a key file, which could, for example, be encrypted with gpg and stored on an NFS share.
+First of all, let's install cryptsetup, you can issue the following command:
+```
+root@crypt06:~# sudo apt-get install cryptsetup
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+cryptsetup is already the newest version (2:1.6.6-5ubuntu2.1).
+0 upgraded, 0 newly installed, 0 to remove and 106 not upgraded.
+```
+
+The dm-crypt feature supports various cipher and hashing algorithms that you can select from the ones that are available in the Kernel and listed in the /proc/crypto procfs file. This also means that dm-crypt takes advantage of the unique hardware acceleration features of IBM Z that increase encryption and decryption speed.
+Using the cryptsetup command, create a LUKS partition on the respective disk devices. For full disk encryption, use the AES xts hardware feature. We choose the AES-xts to achieve a security level of reasonable quality with the best encryption mode.
+
+To confirm that is the best choise, you can issue the following command:
+```
+[root@crypt06:~# cryptsetup benchmark
+# Tests are approximate using memory only (no storage IO).
+PBKDF2-sha1       840205 iterations per second
+PBKDF2-sha256     491827 iterations per second
+PBKDF2-sha512     337379 iterations per second
+PBKDF2-ripemd160  599871 iterations per second
+PBKDF2-whirlpool  179796 iterations per second
+#  Algorithm | Key |  Encryption |  Decryption
+     aes-cbc   128b  2406.2 MiB/s  3821.1 MiB/s
+ serpent-cbc   128b    75.6 MiB/s    89.4 MiB/s
+ twofish-cbc   128b   147.0 MiB/s   175.2 MiB/s
+     aes-cbc   256b  2196.9 MiB/s  3655.5 MiB/s
+ serpent-cbc   256b    75.9 MiB/s    86.1 MiB/s
+ twofish-cbc   256b   146.5 MiB/s   169.3 MiB/s
+     aes-xts   256b  3330.6 MiB/s  3621.2 MiB/s
+ serpent-xts   256b    75.8 MiB/s    85.5 MiB/s
+ twofish-xts   256b   160.6 MiB/s   165.2 MiB/s
+     aes-xts   512b  3770.6 MiB/s  3537.9 MiB/s
+ serpent-xts   512b    77.9 MiB/s    86.7 MiB/s
+ twofish-xts   512b   163.0 MiB/s   165.0 MiB/s
+
+```
+#### Using dm-crypt Volumes as LVM Physical Volumes
+For the following, we will use LVM method to protect data at rest with dm-crypt at volume level. Objective will be to migrate data from unencrypted volume to dm-crypt volume. This is a 4 steps approach that doesn't required to reboot or to stop running application. 
+4 steps includes the following:
+- Step 1: Format a new encrypted volume with dm-crypt
+– Step 2: Add dm-crypt based physical volume to volume group
+– Step 3: Migrate data from non encrypted volume to encrypted volume
+– Step 4: Remove unencrypted volume from the volume group: vgreduce VG PV1
+
+Let's do this for real now.
+
+##### Initial physical volume assessment
+```
+root@crypt06:~# pvs
+  PV          VG   Fmt  Attr PSize  PFree 
+  /dev/dasdc1      lvm2 ---  10.00g 10.00g
+  /dev/dasdd1 vg01 lvm2 a--  10.00g     0
+```
+##### Initial volume group assessment
+```
+root@crypt06:~# vgs
+  VG   #PV #LV #SN Attr   VSize  VFree
+  vg01   1   1   0 wz--n- 10.00g    0
+```
+
+##### Initial logical volume assessment
+```
+root@crypt06:~# lvs
+  LV   VG   Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lv01 vg01 -wi-ao---- 10.00g
+```
+
+#### Step 1 - Formating and encrypting a new volume
+```
+[root@ghrhel74crypt ~]# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/vdc1
+
+WARNING!
+========
+This will overwrite data on /dev/vdc1 irrevocably.
+
+Are you sure? (Type uppercase yes): YES
+Enter passphrase: 
+Verify passphrase: 
+```
+
+```
+[root@ghrhel74crypt ~]# cryptsetup luksOpen /dev/vdc1 ihscrypt
+Enter passphrase for /dev/vdc1: 
+```
+
+```
+[root@ghrhel74crypt ~]# ls /dev/m
+mapper/ mem     mqueue/ 
+```
+```
+[root@ghrhel74crypt ~]# ls /dev/mapper/
+control  ihscrypt  ihsvg-ihslv
+```
+
+```
+[root@ghrhel74crypt ~]# pvcreate /dev/mapper/ihscrypt 
+  Physical volume "/dev/mapper/ihscrypt" successfully created.
+```
+
+#### Step 2 - Add dm-crypt based physical volume to volume group
+```
+[root@ghrhel74crypt ~]# vgextend ihsvg /dev/mapper/ihscrypt 
+  Volume group "ihsvg" successfully extended
+```
+```
+[root@probtp-ihs dev]# vgs
+  VG    #PV #LV #SN Attr   VSize  VFree  
+  ihsvg   2   1   0 wz--n- 49.99g <25.00g
+```
+
+```
+[root@ghrhel74crypt ~]# pvs
+  PV                   VG    Fmt  Attr PSize   PFree  
+  /dev/mapper/ihscrypt ihsvg lvm2 a--  <25.00g <25.00g
+  /dev/vdb1            ihsvg lvm2 a--  <25.00g      0 
+```
+
+#### Step 3 - Migrate data from non encrypted volume to encrypted volume
+```
+[root@ghrhel74crypt ~]# pvmove /dev/vdb1 /dev/mapper/ihscrypt 
+  /dev/vdb1: Moved: 0.00%
+  /dev/vdb1: Moved: 4.83%
+  /dev/vdb1: Moved: 9.24%
+  /dev/vdb1: Moved: 13.13%
+  /dev/vdb1: Moved: 17.16%
+  /dev/vdb1: Moved: 22.02%
+  /dev/vdb1: Moved: 27.55%
+  /dev/vdb1: Moved: 33.08%
+  /dev/vdb1: Moved: 36.91%
+  /dev/vdb1: Moved: 40.98%
+  /dev/vdb1: Moved: 45.46%
+  /dev/vdb1: Moved: 48.55%
+  /dev/vdb1: Moved: 50.91%
+  /dev/vdb1: Moved: 53.52%
+  /dev/vdb1: Moved: 57.02%
+  /dev/vdb1: Moved: 59.99%
+  /dev/vdb1: Moved: 63.03%
+  /dev/vdb1: Moved: 66.34%
+  /dev/vdb1: Moved: 69.78%
+  /dev/vdb1: Moved: 73.37%
+  /dev/vdb1: Moved: 76.53%
+  /dev/vdb1: Moved: 79.93%
+  /dev/vdb1: Moved: 83.43%
+  /dev/vdb1: Moved: 86.83%
+  /dev/vdb1: Moved: 90.47%
+  /dev/vdb1: Moved: 95.17%
+  /dev/vdb1: Moved: 98.56%
+  /dev/vdb1: Moved: 100.00%
+```
+
+#### Step 4 - Remove unencrypted volume from the volume group
+```
+[root@ghrhel74crypt ~]# vgreduce ihsvg /dev/vdb1
+  Removed "/dev/vdb1" from volume group "ihsvg"
+```
+
+```
+[root@ghrhel74crypt ~]# lvs
+  LV    VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  ihslv ihsvg -wi-ao---- <25.00g                                                    
+```
+
+To be sure that there is a prompt after after a reboot, please create /etc/crypttab with the following content:
+```
+ihscrypt /dev/vdc1 none
+```
+
+You just finished the Pervasive encryption LAB. Thank you, and see you soon.

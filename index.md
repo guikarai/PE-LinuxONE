@@ -20,7 +20,7 @@ The IBM Z and LinuxONE systems provide also rich cryptographic functions availab
   
 ## Enabling Linux to use the Hardware
 ### 1. CPACF Enablement verification
-A Linux on IBM Z user can easily check whether the Crypto Enablement feature is installed and which algorithms are supported in hardware. Hardware-acceleration for DES, TDES, AES, and GHASH requires CPACF. Issue the following command /proc/cpuinfo to discover whether the CPACF feature is enabled
+A Linux on IBM Z user can easily check whether the Crypto Enablement feature is installed and which algorithms are supported in hardware. Hardware-acceleration for DES, TDES, AES, and GHASH requires CPACF. Issue the command shown belowto discover whether the CPACF feature is enabled
 on your hardware.
 ```
 root@crypt06:~# cat /proc/cpuinfo 

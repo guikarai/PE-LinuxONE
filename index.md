@@ -525,6 +525,7 @@ You can also confirm that the application is running using a web-browser and che
 ```
 http://<your_lab_machine_ip>:8080/
 ```
+![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/tomcat-running.png)
 
 ### Installing cryptsetup
 The cryptsetup feature provides an interface for configuring encryption on block devices (such as /home or swap partitions), using the Linux kernel device mapper target dm-crypt. It features integrated LUKS support. LUKS standardizes the format of the encrypted disk, which allows different implementations, even from other operating systems, to access and decrypt the disk. 

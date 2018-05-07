@@ -626,6 +626,9 @@ root@crypt06:~# lvs
 ```
 
 ### 3.1 Step 1 - Formating and encrypting a new volume
+In the following step, we will format and encrypt an existing volume.
+![Step1](https://github.com/guikarai/PE-LinuxONE/blob/master/step1.png)
+
 ```
 [root@ghrhel74crypt ~]# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/vdc1
 
@@ -658,6 +661,9 @@ control  ihscrypt  ihsvg-ihslv
 ```
 
 ### 3.2 Step 2 - Add dm-crypt based physical volume to volume group
+In this second step, we will add the encrypted volume into the existing volume group. Both an encrypted volume and unencrypted volume will be part of the same volume groupe.
+![Step2](https://github.com/guikarai/PE-LinuxONE/blob/master/step2.png)
+
 ```
 [root@ghrhel74crypt ~]# vgextend ihsvg /dev/mapper/ihscrypt 
   Volume group "ihsvg" successfully extended
@@ -675,7 +681,10 @@ control  ihscrypt  ihsvg-ihslv
   /dev/vdb1            ihsvg lvm2 a--  <25.00g      0 
 ```
 
-### 3.2 Step 3 - Migrate data from non encrypted volume to encrypted volume
+### 3.3 Step 3 - Migrate data from non encrypted volume to encrypted volume
+In this third step, we will migrate unencrypted data in the uncrypted physical volume to the encrypted physical volume. This operation thanks to the **pvmove** switch update from the source PV to the destination PV once completed. This command doesn't halt running application. This operation can take some time. 
+![Step3](https://github.com/guikarai/PE-LinuxONE/blob/master/step3.png)
+Please issue to following command to proceede:
 ```
 [root@ghrhel74crypt ~]# pvmove /dev/vdb1 /dev/mapper/ihscrypt 
   /dev/vdb1: Moved: 0.00%
@@ -708,7 +717,10 @@ control  ihscrypt  ihsvg-ihslv
   /dev/vdb1: Moved: 100.00%
 ```
 
-### 3.2 Step 4 - Remove unencrypted volume from the volume group
+### 3.4 Step 4 - Remove unencrypted volume from the volume group
+Fourth and last step. It is time to remove from the volume group, the volume that is unencrypted, we don't need it anymore.
+![Step4](https://github.com/guikarai/PE-LinuxONE/blob/master/step4.png)
+Do do so, we will use the **vgreduce**. Please issue the following command:
 ```
 [root@ghrhel74crypt ~]# vgreduce ihsvg /dev/vdb1
   Removed "/dev/vdb1" from volume group "ihsvg"

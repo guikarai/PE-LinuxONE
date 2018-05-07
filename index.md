@@ -707,9 +707,21 @@ control  ihscrypt  ihsvg-ihslv
   LV    VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
   ihslv ihsvg -wi-ao---- <25.00g                                                    
 ```
+Now, application run 100% on a encrypted volume. Let's check if application are still running. Please issue the following command:
+```
+root@crypt06:~# docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES
+a96459e351d6        s390x/tomcat:jre9   "catalina.sh run"   2 days ago          Up 2 days           0.0.0.0:8080->8080/tcp   upbeat_kare
+```
+
+You can also confirm that the application is running using a web-browser and checking the url:
+```
+http://<your_lab_machine_ip>:8080/
+```
 
 To be sure that there is a prompt after after a reboot, please create /etc/crypttab with the following content:
 ```
+root@crypt06:~# vi /etc/crypttab
 ihscrypt /dev/vdc1 none
 ```
 

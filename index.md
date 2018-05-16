@@ -656,7 +656,7 @@ Verify passphrase: 
 ```
 
 ```
-root@crypt06:~# cryptsetup luksOpen /dev/dasdcc1 dockercrypt
+root@crypt06:~# cryptsetup luksOpen /dev/dasdc1 dockercrypt
 Enter passphrase for /dev/dasdc1: 
 ```
 

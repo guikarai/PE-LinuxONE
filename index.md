@@ -572,6 +572,28 @@ http://<your_lab_machine_ip>:8080/
 ```
 ![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/images/tomcat-running.png)
 
+Docker application and its data has been mounted in a volume group named vg01. This is the volume we will encryption without impacting running docker application. To assess the docker configuration on disk, please issue the following commands:
+```
+root@crypt06:~# dmsetup status
+vg01-lv01: 0 20963328 linear 
+```
+First of all, the volume group vg01 is not encrypted.
+
+```
+root@crypt01:~# lsblk
+NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+dasda          94:0    0  6.9G  0 disk 
+`-dasda1       94:1    0  6.9G  0 part /
+dasdb          94:4    0  1.4G  0 disk 
+`-dasdb1       94:5    0  1.4G  0 part [SWAP]
+dasdc          94:8    0   10G  0 disk 
+`-dasdc1       94:9    0   10G  0 part 
+  `-vg01-lv01 252:0    0   10G  0 lvm  /var/lib/docker
+dasdd          94:12   0   10G  0 disk 
+`-dasdd1       94:13   0   10G  0 part
+```
+Second, /var/lib/docker is mounted on the volume group vg01.
+
 ### 1. Installing cryptsetup
 The cryptsetup feature provides an interface for configuring encryption on block devices (such as /home or swap partitions), using the Linux kernel device mapper target dm-crypt. It features integrated LUKS (Linux Unified Key Setup) support. LUKS standardizes the format of the encrypted disk, which allows different implementations, even from other operating systems, to access and decrypt the disk. 
 LUKS adds metadata to the underlying block device, which contains information about the ciphers used and a default of eight key slots that hold an encrypted version of the master key used to decrypt the device. 

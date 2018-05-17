@@ -642,6 +642,7 @@ root@crypt06:~# lvs
 ### 3.1 Step 1 - Formatting and encrypting a new volume
 In the following step, we will format and encrypt an existing volume.
 ![Step1](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step1.png)
+For the follwing, we will use a passphrase to generate an encryption key. Be sure to remember the entered passphrase. You can simply use "cryptolab" to make it simple.
 
 ```
 root@crypt06:~# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/dasdc1
@@ -651,8 +652,8 @@ WARNING!
 This will overwrite data on /dev/dasdc1 irrevocably.
 
 Are you sure? (Type uppercase yes): YES
-Enter passphrase: 
-Verify passphrase: 
+Enter passphrase:  <--- cryptolab
+Verify passphrase: <--- cryptolab
 ```
 
 ```

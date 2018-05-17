@@ -642,7 +642,7 @@ root@crypt06:~# lvs
 ### 3.1 Step 1 - Formatting and encrypting a new volume
 In the following step, we will format and encrypt an existing volume.
 ![Step1](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step1.png)
-For the follwing, we will use a passphrase to generate an encryption key. Be sure to remember the entered passphrase. You can simply use "cryptolab" to make it simple.
+For the follwing, we will use a passphrase to generate an encryption key. Be sure to remember the entered passphrase. You can simply use "cryptlab" to make it simple. The following command will create a cryptographic device mapper device in LUKS encryption mode:
 
 ```
 root@crypt06:~# cryptsetup luksFormat --hash=sha512 --key-size=512 --cipher=aes-xts-plain64 --verify-passphrase /dev/dasdc1
@@ -652,10 +652,11 @@ WARNING!
 This will overwrite data on /dev/dasdc1 irrevocably.
 
 Are you sure? (Type uppercase yes): YES
-Enter passphrase:  <--- cryptolab
-Verify passphrase: <--- cryptolab
+Enter passphrase:  <--- cryptlab
+Verify passphrase: <--- cryptlab
 ```
 
+Next, you have to open the volume onto the device mapper. This is the stage at which you will be prompted for your passphrase. You can choose the name that you want your partition mapped under. We proposed to you "dockercrypt".
 ```
 root@crypt06:~# cryptsetup luksOpen /dev/dasdc1 dockercrypt
 Enter passphrase for /dev/dasdc1: 
@@ -665,21 +666,26 @@ Enter passphrase for /dev/dasdc1: 
 In this second step, we will add the encrypted volume into the existing volume group. Both an encrypted volume and unencrypted volume will be part of the same volume groupe.
 ![Step2](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step2.png)
 
+Now we will use the device as phisical volume. Please issue the following command:
 ```
 root@crypt06:~# pvcreate /dev/mapper/dockercrypt 
   Physical volume "/dev/mapper/dockercrypt" successfully created.
 ```
 
+Now we will add in the volume group the new phisical device /dev/mapper/dockercrypt. Please issue the following command:
 ```
 root@crypt06:~# vgextend vg01 /dev/mapper/dockercrypt 
   Volume group "vg01" successfully extended
 ```
+
+Let's check the new volume group status. As you can see, there is now 2 physical volume in the volume group.
 ```
 root@crypt06:~# vgs
   VG    #PV #LV #SN Attr   VSize  VFree  
   vg01   2   1   0 wz--n- 49.99g <25.00g
 ```
 
+Checking physical volume, we can see that the encrypted new one is there aside from the initial one. Both part of the same volume group vg01.
 ```
 root@crypt06:~# pvs
   PV                      VG    Fmt  Attr PSize   PFree  

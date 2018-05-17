@@ -695,7 +695,7 @@ root@crypt06:~# pvs
 
 You can use sudo dmsetup status to check if there are any LUKS-encrypted partitions. The output should look something like:
 ```
-root@crypt00:~# dmsetup status
+root@crypt06:~# dmsetup status
 dockercrypt: 0 20967872 crypt 
 vg01-lv01: 0 20963328 linear 
 ```
@@ -746,14 +746,31 @@ Fourth and last step. It is time to remove from the volume group, the volume tha
 Do do so, we will use the **vgreduce**. Please issue the following command:
 ```
 root@crypt06:~# vgreduce vg01 /dev/dasdd1
-  Removed "/dev/dasdd1" from volume group "ihsvg"
+  Removed "/dev/dasdd1" from volume group "vg01"
 ```
 
+Let's check the new configuration of LV, VG and PV: Please issue the following command:
 ```
 root@crypt06:~# lvs
   LV   VG    Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
   lv01 vg01  -wi-ao---- 10.00g                                                    
 ```
+
+```
+root@crypt06:~# vgs
+  VG   #PV #LV #SN Attr   VSize  VFree
+  vg01   1   1   0 wz--n- 10.00g    0
+ 
+```
+
+```
+root@crypt06:~# pvs
+  PV                      VG   Fmt  Attr PSize  PFree 
+  /dev/dasdc1                  lvm2 ---  10.00g 10.00g
+  /dev/dasdd1                  lvm2 ---  10.00g 10.00g
+  /dev/mapper/dockercrypt vg01 lvm2 a--  10.00g     0 
+```
+
 Now, application run 100% on a encrypted volume. Let's check if application is still running. Please issue the following command:
 ```
 root@crypt06:~# docker ps
@@ -767,6 +784,22 @@ http://<your_lab_machine_ip>:8080/
 ```
 If you see the following, you did it!
 ![Image of still running tomcat application](https://github.com/guikarai/PE-LinuxONE/blob/master/images/tomcat-running.png)
+
+To guaranty you that docker runs on the encrypted devices, please issue the following command:
+```
+root@crypt06:~# lsblk
+NAME            MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+dasda            94:0    0  6.9G  0 disk  
+`-dasda1         94:1    0  6.9G  0 part  /
+dasdb            94:4    0  1.4G  0 disk  
+`-dasdb1         94:5    0  1.4G  0 part  [SWAP]
+dasdc            94:8    0   10G  0 disk  
+`-dasdc1         94:9    0   10G  0 part  
+  `-dockercrypt 252:1    0   10G  0 crypt 
+    `-vg01-lv01 252:0    0   10G  0 lvm   /var/lib/docker
+dasdd            94:12   0   10G  0 disk  
+`-dasdd1         94:13   0   10G  0 part  
+```
 
 To be sure that there is a prompt after after a reboot, please create /etc/crypttab with the following content:
 ```

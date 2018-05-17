@@ -693,6 +693,15 @@ root@crypt06:~# pvs
   /dev/dasdd1             vg01  lvm2 a--  10.00g      0 
 ```
 
+You can use sudo dmsetup status to check if there are any LUKS-encrypted partitions. The output should look something like:
+```
+root@crypt00:~# dmsetup status
+dockercrypt: 0 20967872 crypt 
+vg01-lv01: 0 20963328 linear 
+```
+The line marked "crypt" shows that sda5 has been encrypted. You can see which filesystems are on that via the lvm tools.
+
+
 ### 3.3 Step 3 - Migrate data from non encrypted volume to encrypted volume
 In this third step, we will migrate unencrypted data in the uncrypted physical volume to the encrypted physical volume. This operation thanks to the **pvmove** switch update from the source PV to the destination PV once completed. This command doesn't halt running application. This operation can take some time. 
 ![Step3](https://github.com/guikarai/PE-LinuxONE/blob/master/images/step3.png)

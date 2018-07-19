@@ -1,5 +1,6 @@
-# Pervasive Encryption Applied - Hands-on LABs for selected IBM WW Events
-IBM Systems Technical University
+# Pervasive Encryption Applied - Hands-on LABs
+
+Seen and used in IBM Systems Technical University
 * l101813 Thu 10:15-11:15 D6 Barsac
 * l101813 Thu 11:30-12:30 D6 Barsac  
 
